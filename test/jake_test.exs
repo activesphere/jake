@@ -20,7 +20,10 @@ defmodule JakeTest do
   end
 
   test "suite" do
-    for path <- ["draft4/type.json"] do
+    for path <- [
+          "draft4/type.json",
+          "draft4/anyOf.json"
+        ] do
       Path.wildcard("test_suite/tests/#{path}")
       |> Enum.map(fn path -> File.read!(path) |> Jason.decode!() end)
       |> Enum.concat()
@@ -30,9 +33,17 @@ defmodule JakeTest do
 
   def verify(schema) do
     Jake.gen(schema)
-    |> Enum.take(10)
+    |> Enum.take(100)
     |> Enum.each(fn value ->
-      assert Validator.validate(schema, value) == :ok
+      result = Validator.validate(schema, value)
+
+      if result != :ok do
+        flunk(
+          "Invalid data: \nschema: #{inspect(schema)}\ngenerated: #{inspect(value)}\nerror: #{
+            inspect(result)
+          }"
+        )
+      end
     end)
   end
 end
