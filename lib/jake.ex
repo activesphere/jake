@@ -1,9 +1,13 @@
 defmodule Jake do
-  def gen(%{"type" => "object"} = spec) do
-    Jake.Object.gen(spec)
+  def gen(%{"type" => type} = spec) when is_binary(type) do
+    module = String.to_existing_atom("Elixir.Jake.#{String.capitalize(type)}")
+    apply(module, :gen, [spec])
   end
 
-  def gen(%{"type" => "string"} = spec) do
-    Jake.String.gen(spec)
+  def gen(%{"type" => types} = spec) when is_list(types) do
+    Enum.map(types, fn type ->
+      gen(%{spec | "type" => type})
+    end)
+    |> StreamData.one_of()
   end
 end
