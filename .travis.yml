@@ -1,0 +1,13 @@
+matrix:
+  include:
+    - language: elixir
+      otp_release: 20.3
+      elixir: 1.6
+    - language: elixir
+      otp_release: 21.0
+      elixir: 1.7
+
+script:
+  - mix format --check-formatted
+  - mix compile --force --warnings-as-errors
+  - mix test --trace
