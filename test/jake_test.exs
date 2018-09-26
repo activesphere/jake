@@ -12,6 +12,19 @@ defmodule JakeTest do
           "type" => "string"
         }
       }
+    },
+    # Test 'required'
+    %{
+      "type" => "object",
+      "properties" => %{
+        "foo" => %{
+          "type" => "string"
+        },
+        "bar" => %{
+          "type" => "string"
+        }
+      },
+      "required" => ["foo"]
     }
   ]
 
