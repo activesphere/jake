@@ -12,6 +12,21 @@ defmodule JakeTest do
           "type" => "string"
         }
       }
+    },
+    %{
+      "type" => "object",
+      "properties" => %{
+        "foo" => %{
+          "type" => "string"
+        },
+        "bar" => %{
+          "type" => "string"
+        },
+        "baz" => %{
+          "type" => "string"
+        }
+      },
+      "required" => ["foo"]
     }
   ]
 
@@ -22,7 +37,8 @@ defmodule JakeTest do
   test "suite" do
     for path <- [
           "draft4/type.json",
-          "draft4/anyOf.json"
+          "draft4/anyOf.json",
+          "draft4/required.json"
         ] do
       Path.wildcard("test_suite/tests/#{path}")
       |> Enum.map(fn path -> File.read!(path) |> Jason.decode!() end)
