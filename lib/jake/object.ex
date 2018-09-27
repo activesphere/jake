@@ -1,9 +1,18 @@
 defmodule Jake.Object do
-  def gen(%{"properties" => properties}) do
-    Enum.map(properties, fn {name, spec} ->
+  def gen(%{"properties" => properties, "required" => required}) do
+    properties
+    |> Map.take(required)
+    |> Stream.map(fn {name, spec} ->
       {name, Jake.gen(spec)}
     end)
-    |> Enum.into(%{})
+    |> StreamData.fixed_map()
+  end
+
+  def gen(%{"properties" => properties}) do
+    properties
+    |> Stream.map(fn {name, spec} ->
+      {name, Jake.gen(spec)}
+    end)
     |> StreamData.fixed_map()
   end
 
