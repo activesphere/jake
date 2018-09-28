@@ -16,6 +16,27 @@ defmodule Jake do
     |> StreamData.one_of()
   end
 
+  def gen(%{"allOf" => options} = spec) when is_list(options) do
+    option =
+      options
+      |> Enum.reduce(%{"properties" => %{}, "required" => []}, fn x, acc ->
+        %{
+          "properties" => Map.merge(acc["properties"], x |> Map.get("properties", %{})),
+          "required" => (x |> Map.get("required", [])) ++ acc["required"]
+        }
+      end)
+
+    spec
+    |> Map.drop(["allOf"])
+    |> Map.merge(option, fn
+      "properties", prop1, nil -> prop1
+      "properties", prop1, prop2 -> Map.merge(prop1, prop2)
+      "required", prop1, prop2 -> prop1 ++ prop2
+    end)
+    |> Map.put("type", "object")
+    |> gen
+  end
+
   def gen(%{"type" => type} = spec) when is_binary(type) do
     module = String.to_existing_atom("Elixir.Jake.#{String.capitalize(type)}")
     apply(module, :gen, [spec])
