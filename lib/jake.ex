@@ -21,7 +21,7 @@ defmodule Jake do
   def gen(%{"allOf" => options} = spec) when is_list(options) do
     properties =
       options
-      |> Enum.reduce(%{}, fn x, acc -> x |> Jake.MapUtil.deep_merge(acc) end)
+      |> Enum.reduce(%{}, fn x, acc -> MapUtil.deep_merge(x, acc) end)
 
     spec
     |> Map.drop(["allOf"])
