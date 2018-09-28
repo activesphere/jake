@@ -1,4 +1,6 @@
 defmodule Jake do
+  alias Jake.MapUtil
+
   @types [
     "array",
     "boolean",
@@ -14,6 +16,17 @@ defmodule Jake do
       gen(Map.merge(Map.drop(spec, ["anyOf"]), option))
     end)
     |> StreamData.one_of()
+  end
+
+  def gen(%{"allOf" => options} = spec) when is_list(options) do
+    properties =
+      options
+      |> Enum.reduce(%{}, fn x, acc -> MapUtil.deep_merge(x, acc) end)
+
+    spec
+    |> Map.drop(["allOf"])
+    |> MapUtil.deep_merge(properties)
+    |> gen
   end
 
   def gen(%{"type" => type} = spec) when is_binary(type) do
