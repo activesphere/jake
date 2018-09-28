@@ -40,6 +40,8 @@ defmodule JakeTest do
           "draft4/anyOf.json",
           "draft4/required.json",
           "draft4/allOf.json",
+          "draft4/items.json",
+          "draft4/uniqueItems.json",
           "draft4/enum.json"
         ] do
       Path.wildcard("test_suite/tests/#{path}")
