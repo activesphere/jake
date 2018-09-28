@@ -26,7 +26,6 @@ defmodule Jake do
     spec
     |> Map.drop(["allOf"])
     |> MapUtil.deep_merge(properties)
-    |> Map.put("type", "object")
     |> gen
   end
 
