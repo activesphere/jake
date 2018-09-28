@@ -1,6 +1,5 @@
 defmodule Jake.Array do
   def gen(spec) do
-    unique = Map.get(spec, "uniqueItems", false)
     items = Map.get(spec, "items", nil)
 
     case items do
