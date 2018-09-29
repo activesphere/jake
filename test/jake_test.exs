@@ -27,6 +27,27 @@ defmodule JakeTest do
         }
       },
       "required" => ["foo"]
+    },
+    # Minimum and Maximum
+    %{
+      "type" => "number",
+      "minimum" => 1.1,
+      "maximum" => 2.4
+    },
+    %{
+      "type" => "integer",
+      "minimum" => 1,
+      "maximum" => 4
+    },
+
+    # multipleOf
+    %{
+      "type" => "integer",
+      "multipleOf" => 3
+    },
+    %{
+      "type" => "number",
+      "multipleOf" => 3
     }
   ]
 
