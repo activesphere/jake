@@ -16,7 +16,7 @@ defmodule Jake.Integer do
     max_bound =
       case {max, exclusive_max} do
         {nil, nil} -> 9_007_199_254_740_991
-        {min, nil} -> max
+        {max, nil} -> max
         {nil, exclusive_max} -> exclusive_max + 1
       end
 
