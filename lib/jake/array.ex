@@ -29,7 +29,8 @@ defmodule Jake.Array do
         max_bound = if max_bound < 0, do: 0, else: max_bound
 
         additional_items_generator =
-          StreamData.list_of(Jake.gen(additional_items),
+          StreamData.list_of(
+            Jake.gen(additional_items),
             min_length: min_bound,
             max_length: max_bound
           )
