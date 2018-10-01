@@ -38,12 +38,12 @@ defmodule Jake.Array do
         |> StreamData.map(&List.foldl(&1, [], fn x, acc -> acc ++ x end))
 
       {items, true, _} when is_map(items) ->
-        items
-        |> Jake.gen()
+        Jake.gen(items)
         |> StreamData.uniq_list_of(max_length: max_items, min_length: min_items)
 
       {items, false, _} when is_map(items) ->
-        items |> Jake.gen() |> StreamData.list_of(max_length: max_items, min_length: min_items)
+        Jake.gen(items)
+        |> StreamData.list_of(max_length: max_items, min_length: min_items)
     end
   end
 end
