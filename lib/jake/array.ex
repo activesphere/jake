@@ -21,18 +21,28 @@ defmodule Jake.Array do
       {items, _uniq, additional_items} when is_list(items) ->
         fixed_items_generator = items |> Enum.map(&Jake.gen(&1)) |> StreamData.fixed_list()
 
-        additional_items_generator =
-          StreamData.integer(min_items..max_items)
-          |> StreamData.bind(fn n ->
-            additional_length =
-              if(n < length(items)) do
-                0
-              else
-                n - length(items)
-              end
+        min_bound = min_items - length(items)
+        max_bound = max_items - length(items)
 
-            StreamData.list_of(Jake.gen(additional_items), length: additional_length)
-          end)
+        min_bound =
+          if min_bound < 0 do
+            0
+          else
+            min_bound
+          end
+
+        max_bound =
+          if max_bound < 0 do
+            0
+          else
+            max_bound
+          end
+
+        additional_items_generator =
+          StreamData.list_of(Jake.gen(additional_items),
+            min_length: min_bound,
+            max_length: max_bound
+          )
 
         StreamData.fixed_list([fixed_items_generator, additional_items_generator])
         |> StreamData.map(&Enum.concat/1)
