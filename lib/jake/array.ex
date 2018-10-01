@@ -19,9 +19,22 @@ defmodule Jake.Array do
         items |> Enum.map(&Jake.gen(&1)) |> StreamData.fixed_list()
 
       {items, _uniq, additional_items} when is_list(items) ->
-        fixed_items = items |> Enum.map(&Jake.gen(&1)) |> StreamData.fixed_list()
+        fixed_items_stream = items |> Enum.map(&Jake.gen(&1)) |> StreamData.fixed_list()
 
-        StreamData.fixed_list([fixed_items, StreamData.list_of(Jake.gen(additional_items))])
+        additional_items_stream =
+          StreamData.integer(min_items..max_items)
+          |> StreamData.bind(fn n ->
+            additional_length =
+              if(n < length(items)) do
+                0
+              else
+                n - length(items)
+              end
+
+            StreamData.list_of(Jake.gen(additional_items), length: additional_length)
+          end)
+
+        StreamData.fixed_list([fixed_items_stream, additional_items_stream])
         |> StreamData.map(&List.foldl(&1, [], fn x, acc -> acc ++ x end))
 
       {items, true, _} when is_map(items) ->

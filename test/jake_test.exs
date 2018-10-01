@@ -27,6 +27,16 @@ defmodule JakeTest do
         }
       },
       "required" => ["foo"]
+    },
+    %{
+      "type" => "array",
+      "minItems" => 3,
+      "maxItems" => 5,
+      "items" => [
+        %{"type" => "integer"},
+        %{"type" => "string"}
+      ],
+      "additionalItems" => %{"type" => "number"}
     }
   ]
 
