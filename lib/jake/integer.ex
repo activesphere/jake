@@ -17,7 +17,7 @@ defmodule Jake.Integer do
       case {max, exclusive_max} do
         {nil, nil} -> 9_007_199_254_740_991
         {max, nil} -> max
-        {nil, exclusive_max} -> exclusive_max + 1
+        {nil, exclusive_max} -> exclusive_max - 1
       end
 
     StreamData.integer(trunc(min_bound / multipleOf)..trunc(max_bound / multipleOf))
