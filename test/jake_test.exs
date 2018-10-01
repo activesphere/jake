@@ -37,6 +37,18 @@ defmodule JakeTest do
         %{"type" => "string"}
       ],
       "additionalItems" => %{"type" => "number"}
+    },
+    %{
+      "type" => "array",
+      "items" => [
+        %{
+          "type" => "string"
+        },
+        %{
+          "type" => "string"
+        }
+      ],
+      "uniqueItems" => true
     }
   ]
 

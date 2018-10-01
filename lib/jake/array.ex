@@ -24,19 +24,9 @@ defmodule Jake.Array do
         min_bound = min_items - length(items)
         max_bound = max_items - length(items)
 
-        min_bound =
-          if min_bound < 0 do
-            0
-          else
-            min_bound
-          end
+        min_bound = if min_bound < 0, do: 0, else: min_bound
 
-        max_bound =
-          if max_bound < 0 do
-            0
-          else
-            max_bound
-          end
+        max_bound = if max_bound < 0, do: 0, else: max_bound
 
         additional_items_generator =
           StreamData.list_of(Jake.gen(additional_items),
