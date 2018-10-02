@@ -3,7 +3,7 @@ defmodule Jake.Array do
     items = Map.get(spec, "items", %{})
     uniq = Map.get(spec, "uniqueItems", false)
     additional_items = Map.get(spec, "additionalItems", %{})
-    max_items = Map.get(spec, "maxItems", 100)
+    max_items = Map.get(spec, "maxItems", 10)
     min_items = Map.get(spec, "minItems", 0)
 
     case {items, uniq, additional_items} do
