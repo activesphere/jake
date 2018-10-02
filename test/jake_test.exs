@@ -49,6 +49,12 @@ defmodule JakeTest do
         }
       ],
       "uniqueItems" => true
+    },
+    %{
+      "items" => [%{"type" => "string"}, %{"type" => "string"}],
+      "type" => "array",
+      "uniqueItems" => true,
+      "minItems" => 4
     }
   ]
 
