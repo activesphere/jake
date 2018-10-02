@@ -15,8 +15,19 @@ defmodule Jake.Array do
         StreamData.string(:ascii)
         |> StreamData.list_of(max_length: max_items, min_length: min_items)
 
-      {items, _uniq, false} when is_list(items) ->
-        items |> Enum.map(&Jake.gen(&1)) |> StreamData.fixed_list()
+      {items, true, false} when is_list(items) ->
+        IO.inspect(items)
+
+        items
+        |> Enum.map(&Jake.gen(&1))
+        |> StreamData.fixed_list()
+        |> StreamData.map(&Enum.uniq/1)
+        |> StreamData.filter(&(length(&1) == length(items)))
+
+      {items, false, false} when is_list(items) ->
+        items
+        |> Enum.map(&Jake.gen(&1))
+        |> StreamData.fixed_list()
 
       {items, true, additional_items} when is_list(items) ->
         fixed_items_generator =
