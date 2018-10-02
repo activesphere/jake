@@ -27,6 +27,34 @@ defmodule JakeTest do
         }
       },
       "required" => ["foo"]
+    },
+    %{
+      "type" => "array",
+      "minItems" => 3,
+      "maxItems" => 5,
+      "items" => [
+        %{"type" => "integer"},
+        %{"type" => "string"}
+      ],
+      "additionalItems" => %{"type" => "number"}
+    },
+    %{
+      "type" => "array",
+      "items" => [
+        %{
+          "type" => "string"
+        },
+        %{
+          "type" => "string"
+        }
+      ],
+      "uniqueItems" => true
+    },
+    %{
+      "items" => [%{"type" => "string"}, %{"type" => "string"}],
+      "type" => "array",
+      "uniqueItems" => true,
+      "minItems" => 4
     }
   ]
 
@@ -40,6 +68,11 @@ defmodule JakeTest do
           "draft4/anyOf.json",
           "draft4/required.json",
           "draft4/allOf.json",
+          "draft4/items.json",
+          "draft4/maxItems.json",
+          "draft4/minItems.json",
+          "draft4/uniqueItems.json",
+          "draft4/additionalItems.json",
           "draft4/enum.json"
         ] do
       Path.wildcard("test_suite/tests/#{path}")
