@@ -40,6 +40,27 @@ defmodule JakeTest do
       "maximum" => 4
     },
 
+    # Minimum and Maximum
+    %{
+      "type" => "number",
+      "minimum" => 1.1,
+      "maximum" => 2.4,
+      "exclusiveMinimum" => true
+    },
+    %{
+      "type" => "integer",
+      "minimum" => 1,
+      "maximum" => 4,
+      "exclusiveMaximum" => false
+    },
+    %{
+      "type" => "number",
+      "minimum" => 2.0,
+      "maximum" => 8.0,
+      "multipleOf" => 2,
+      "exclusiveMinimum" => true
+    },
+
     # multipleOf
     %{
       "type" => "integer",
@@ -61,6 +82,8 @@ defmodule JakeTest do
           "draft4/anyOf.json",
           "draft4/required.json",
           "draft4/allOf.json",
+          "draft4/minLength.json",
+          "draft4/maxLength.json",
           "draft4/enum.json"
         ] do
       Path.wildcard("test_suite/tests/#{path}")
