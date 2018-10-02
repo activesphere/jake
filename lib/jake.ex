@@ -41,6 +41,10 @@ defmodule Jake do
     |> StreamData.one_of()
   end
 
+  def gen(%{"enum" => enum}) when is_list(enum) do
+    StreamData.member_of(enum)
+  end
+
   # type not present
   def gen(spec) do
     Enum.map(@types, fn type ->
