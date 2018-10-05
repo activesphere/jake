@@ -33,6 +33,34 @@ defmodule JakeTest do
       "maximum" => 100,
       "exclusiveMinimum" => true,
       "exclusiveMaximum" => true
+    },
+    %{
+      "type" => "array",
+      "minItems" => 3,
+      "maxItems" => 5,
+      "items" => [
+        %{"type" => "integer"},
+        %{"type" => "string"}
+      ],
+      "additionalItems" => %{"type" => "number"}
+    },
+    %{
+      "type" => "array",
+      "items" => [
+        %{
+          "type" => "string"
+        },
+        %{
+          "type" => "string"
+        }
+      ],
+      "uniqueItems" => true
+    },
+    %{
+      "items" => [%{"type" => "string"}, %{"type" => "string"}],
+      "type" => "array",
+      "uniqueItems" => true,
+      "minItems" => 4
     }
   ]
 
@@ -49,7 +77,12 @@ defmodule JakeTest do
           "draft4/enum.json",
           "draft4/minimum.json",
           "draft4/maximum.json",
-          "draft4/pattern.json"
+          "draft4/pattern.json",
+          "draft4/items.json",
+          "draft4/minItems.json",
+          "draft4/maxItems.json",
+          "draft4/uniqItems.json",
+          "draft4/additionalItems.json"
         ] do
       Path.wildcard("test_suite/tests/#{path}")
       |> Enum.map(fn path -> File.read!(path) |> Jason.decode!() end)

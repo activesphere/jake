@@ -47,10 +47,10 @@ defmodule Jake do
 
   # type not present
   def gen(spec) do
-    Enum.map(@types, fn type ->
+    StreamData.member_of(@types)
+    |> StreamData.bind(fn type ->
       Map.put(spec, "type", type)
       |> gen()
     end)
-    |> StreamData.one_of()
   end
 end
