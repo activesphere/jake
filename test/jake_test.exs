@@ -27,6 +27,12 @@ defmodule JakeTest do
         }
       },
       "required" => ["foo"]
+    },
+    %{
+      "minimum" => 0,
+      "maximum" => 100,
+      "exclusiveMinimum" => true,
+      "exclusiveMaximum" => true
     }
   ]
 
@@ -40,7 +46,9 @@ defmodule JakeTest do
           "draft4/anyOf.json",
           "draft4/required.json",
           "draft4/allOf.json",
-          "draft4/enum.json"
+          "draft4/enum.json",
+          "draft4/minimum.json",
+          "draft4/maximum.json"
         ] do
       Path.wildcard("test_suite/tests/#{path}")
       |> Enum.map(fn path -> File.read!(path) |> Jason.decode!() end)
