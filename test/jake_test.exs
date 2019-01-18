@@ -95,7 +95,7 @@ defmodule JakeTest do
   end
 
   def verify(schema) do
-    Jake.gen(schema)
+    Jake.generator(schema)
     |> Enum.take(100)
     |> Enum.each(fn value ->
       result = Validator.validate(schema, value)
