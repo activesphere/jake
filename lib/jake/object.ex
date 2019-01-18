@@ -1,7 +1,7 @@
 defmodule Jake.Object do
   alias Jake.StreamUtil
 
-  def gen(spec) do
+  def gen(spec, schema) do
     properties = Map.get(spec, "properties", %{})
     required = Map.get(spec, "required", [])
     all_properties = Map.keys(properties)
@@ -15,27 +15,27 @@ defmodule Jake.Object do
     additional_min = optional_min - length(optional)
     additional_max = max - length(required) - length(optional)
 
-    additional(additional_properties, all_properties, additional_min..additional_max)
+    additional(additional_properties, all_properties, additional_min..additional_max, schema)
     |> StreamUtil.merge(
       StreamUtil.optional_map(
-        as_map(properties, optional),
+        as_map(properties, optional, schema),
         optional_min..optional_max
       )
     )
-    |> StreamUtil.merge(StreamData.fixed_map(as_map(properties, required)))
+    |> StreamUtil.merge(StreamData.fixed_map(as_map(properties, required, schema)))
   end
 
-  defp additional(properties, _all, min.._max) when min < 0 or not is_map(properties) do
+  defp additional(properties, _all, min.._max, schema) when min < 0 or not is_map(properties) do
     StreamData.constant(%{})
   end
 
-  defp additional(properties, all, min..max) do
+  defp additional(properties, all, min..max, schema) do
     Randex.stream(~r/[a-zA-Z_]\w{0,5}/, mod: Randex.Generator.StreamData)
     |> StreamData.filter(fn x -> !Enum.member?(all, x) end)
     |> StreamData.uniq_list_of(min_length: min, max_length: max)
     |> StreamData.bind(fn keys ->
       Enum.map(keys, fn key ->
-        {key, Jake.gen(properties)}
+        {key, Map.put(schema, "map", properties) |> Jake.gen_init()}
       end)
       |> Enum.into(%{})
       |> StreamData.fixed_map()
@@ -43,10 +43,10 @@ defmodule Jake.Object do
     |> StreamData.scale(fn size -> trunc(size / 10) end)
   end
 
-  defp as_map(properties, keys) do
+  defp as_map(properties, keys, schema) do
     Map.take(properties, keys)
     |> Enum.map(fn {name, spec} ->
-      {name, Jake.gen(spec)}
+      {name, Map.put(schema, "map", spec) |> Jake.gen_init()}
     end)
     |> Enum.into(%{})
   end
