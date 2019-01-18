@@ -33,7 +33,6 @@ defmodule Jake do
           true ->
             gen_type(nschema)
         end
-        
         |> StreamData.resize(nsize)
       end
     )
@@ -42,10 +41,11 @@ defmodule Jake do
   def get_lazy_streamkey(schema) do
     {map, ref} =
       get_in(schema, ["map", "$ref"]) |> Jake.Ref.expand_ref(schema["map"], schema["omap"])
+
     if ref do
-        StreamData.constant({map, trunc(schema["size"] / 2)})
+      StreamData.constant({map, trunc(schema["size"] / 2)})
     else
-        StreamData.constant({map, schema["size"]})
+      StreamData.constant({map, schema["size"]})
     end
   end
 
