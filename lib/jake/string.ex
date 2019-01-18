@@ -1,5 +1,5 @@
 defmodule Jake.String do
-  def gen(spec) do
+  def gen(spec, _schema) do
     options = []
     min_length = Map.get(spec, "minLength")
     max_length = Map.get(spec, "maxLength")
