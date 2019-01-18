@@ -11,46 +11,70 @@ defmodule Jake do
     "string"
   ]
 
-  def gen(%{"anyOf" => options} = spec) when is_list(options) do
-    Enum.map(options, fn option ->
-      gen(Map.merge(Map.drop(spec, ["anyOf"]), option))
+  def generator(map) do
+    StreamData.sized(fn size ->
+      Map.put(%{}, "map", map) |> Map.put("omap", map) |> Map.put("size", size) |> gen_init()
     end)
-    |> StreamData.one_of()
   end
 
-  def gen(%{"allOf" => options} = spec) when is_list(options) do
-    properties =
-      options
-      |> Enum.reduce(%{}, fn x, acc -> MapUtil.deep_merge(x, acc) end)
+  def gen_init(schema) do
+    StreamData.bind(
+      get_lazy_streamkey(schema),
+      fn {nmap, nsize} ->
+        nschema = Map.put(schema, "map", nmap) |> Map.put("size", nsize)
 
-    spec
-    |> Map.drop(["allOf"])
-    |> MapUtil.deep_merge(properties)
-    |> gen
+        cond do
+          nmap["allOf"] || nmap["oneOf"] || nmap["anyOf"] || nmap["not"] ->
+            Jake.Mixed.gen_mixed(nmap, nschema)
+
+          nmap["enum"] ->
+            gen_enum(nschema, nmap["enum"])
+
+          true ->
+            gen_type(nschema)
+        end
+        
+        |> StreamData.resize(nsize)
+      end
+    )
   end
 
-  def gen(%{"type" => type} = spec) when is_binary(type) do
-    module = String.to_existing_atom("Elixir.Jake.#{String.capitalize(type)}")
-    apply(module, :gen, [spec])
+  def get_lazy_streamkey(schema) do
+    {map, ref} =
+      get_in(schema, ["map", "$ref"]) |> Jake.Ref.expand_ref(schema["map"], schema["omap"])
+    if ref do
+        StreamData.constant({map, trunc(schema["size"] / 2)})
+    else
+        StreamData.constant({map, schema["size"]})
+    end
   end
 
-  def gen(%{"type" => types} = spec) when is_list(types) do
-    Enum.map(types, fn type ->
-      gen(%{spec | "type" => type})
-    end)
-    |> StreamData.one_of()
-  end
+  def gen_enum(schema, enum) when is_list(enum) do
+    map = schema["map"]
 
-  def gen(%{"enum" => enum}) when is_list(enum) do
     StreamData.member_of(enum)
+    |> StreamData.filter(fn x -> ExJsonSchema.Validator.valid?(map, x) end)
+  end
+
+  def gen_type(schema) do
+    schema["map"] |> gen(schema)
+  end
+
+  def gen(%{"type" => type} = spec, schema) when is_binary(type) do
+    module = String.to_existing_atom("Elixir.Jake.#{String.capitalize(type)}")
+    apply(module, :gen, [spec, schema])
+  end
+
+  def gen(%{"type" => types} = spec, schema) when is_list(types) do
+    list = for n <- types, do: %{"type" => n}
+    nmap = Map.drop(spec, ["type"])
+
+    for(n <- list, is_map(n), do: Map.put(schema, "map", Map.merge(n, nmap)) |> Jake.gen_init())
+    |> StreamData.one_of()
   end
 
   # type not present
-  def gen(spec) do
-    StreamData.member_of(@types)
-    |> StreamData.bind(fn type ->
-      Map.put(spec, "type", type)
-      |> gen()
-    end)
+  def gen(spec, schema) do
+    Jake.Notype.gen_notype(nil, schema)
   end
 end
