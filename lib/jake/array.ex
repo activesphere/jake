@@ -1,5 +1,5 @@
 defmodule Jake.Array do
-  def gen(spec) do
+  def gen(spec, schema) do
     items = Map.get(spec, "items", %{})
     uniq = Map.get(spec, "uniqueItems", false)
     additional_items = Map.get(spec, "additionalItems", %{})
@@ -19,15 +19,19 @@ defmodule Jake.Array do
       items = Stream.concat([items, additional_items])
 
       StreamData.bind(StreamData.integer(min_items..max_items), fn count ->
-        Enum.take(items, count)
-        |> Enum.map(&Jake.gen(&1))
+        list = Enum.take(items, count)
+
+        for(n <- list, do: Map.put(schema, "map", n))
+        |> Enum.map(&Jake.gen_init(&1))
         |> StreamData.fixed_list()
       end)
       |> StreamData.filter(fn x ->
         !uniq || length(Enum.uniq(x)) == length(x)
       end)
     else
-      list_of.(Jake.gen(items), min_length: min_items, max_length: max_items)
+      Map.put(schema, "map", items)
+      |> Jake.gen_init()
+      |> list_of.(min_length: min_items, max_length: max_items)
     end
   end
 end
