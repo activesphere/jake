@@ -1,7 +1,7 @@
 defmodule Jake.Number do
   alias Jake.StreamUtil
 
-  def gen(spec) do
+  def gen(spec, _) do
     min = Map.get(spec, "minimum")
     max = Map.get(spec, "maximum")
     exclusive_min = Map.get(spec, "exclusiveMinimum", false)
