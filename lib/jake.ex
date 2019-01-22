@@ -22,13 +22,7 @@ defmodule Jake do
       get_lazy_streamkey(schema),
       fn {nmap, nsize} ->
         nschema = Map.put(schema, "map", nmap) |> Map.put("size", nsize)
-
-        if nmap["enum"] do
-          gen_enum(nschema, nmap["enum"])
-        else
-          gen(nmap, nschema)
-        end
-        |> StreamData.resize(nsize)
+        gen(nmap, nschema) |> StreamData.resize(nsize)
       end
     )
   end
@@ -44,11 +38,9 @@ defmodule Jake do
     end
   end
 
-  def gen_enum(schema, enum) when is_list(enum) do
-    map = schema["map"]
-
+  def gen(%{"enum" => enum} = spec, schema) when is_list(enum) do
     StreamData.member_of(enum)
-    |> StreamData.filter(fn x -> ExJsonSchema.Validator.valid?(map, x) end)
+    |> StreamData.filter(fn x -> ExJsonSchema.Validator.valid?(spec, x) end)
   end
 
   def gen(%{"anyOf" => options} = spec, schema) when is_list(options) do
