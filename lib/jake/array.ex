@@ -22,7 +22,7 @@ defmodule Jake.Array do
         list = Enum.take(items, count)
 
         for(n <- list, do: Map.put(schema, "map", n))
-        |> Enum.map(&Jake.gen_init(&1))
+        |> Enum.map(&Jake.gen_lazy(&1))
         |> StreamData.fixed_list()
       end)
       |> StreamData.filter(fn x ->
@@ -30,7 +30,7 @@ defmodule Jake.Array do
       end)
     else
       Map.put(schema, "map", items)
-      |> Jake.gen_init()
+      |> Jake.gen_lazy()
       |> list_of.(min_length: min_items, max_length: max_items)
     end
   end

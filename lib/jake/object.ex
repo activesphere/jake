@@ -35,7 +35,7 @@ defmodule Jake.Object do
     |> StreamData.uniq_list_of(min_length: min, max_length: max)
     |> StreamData.bind(fn keys ->
       Enum.map(keys, fn key ->
-        {key, Jake.gen_init(Map.put(schema, "map", properties))}
+        {key, Jake.gen_lazy(Map.put(schema, "map", properties))}
       end)
       |> Enum.into(%{})
       |> StreamData.fixed_map()
@@ -46,7 +46,7 @@ defmodule Jake.Object do
   defp as_map(properties, keys, schema) do
     Map.take(properties, keys)
     |> Enum.map(fn {name, spec} ->
-      {name, Jake.gen_init(Map.put(schema, "map", spec))}
+      {name, Jake.gen_lazy(Map.put(schema, "map", spec))}
     end)
     |> Enum.into(%{})
   end

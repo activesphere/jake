@@ -13,11 +13,11 @@ defmodule Jake do
 
   def generator(map) do
     StreamData.sized(fn size ->
-      Map.put(%{}, "map", map) |> Map.put("omap", map) |> Map.put("size", size) |> gen_init()
+      Map.put(%{}, "map", map) |> Map.put("omap", map) |> Map.put("size", size) |> gen_lazy()
     end)
   end
 
-  def gen_init(schema) do
+  def gen_lazy(schema) do
     StreamData.bind(
       get_lazy_streamkey(schema),
       fn {nmap, nsize} ->
@@ -46,7 +46,7 @@ defmodule Jake do
   def gen(%{"anyOf" => options} = spec, schema) when is_list(options) do
     Enum.map(options, fn option ->
       map = Map.merge(Map.drop(spec, ["anyOf"]), option)
-      Map.put(schema, "map", map) |> gen_init()
+      Map.put(schema, "map", map) |> gen_lazy()
     end)
     |> StreamData.one_of()
   end
@@ -61,7 +61,7 @@ defmodule Jake do
       |> Map.drop(["allOf"])
       |> MapUtil.deep_merge(properties)
 
-    Map.put(schema, "map", map) |> gen_init()
+    Map.put(schema, "map", map) |> gen_lazy()
   end
 
   def gen(%{"type" => type} = spec, schema) when is_binary(type) do
@@ -74,7 +74,7 @@ defmodule Jake do
       map = %{spec | "type" => type}
 
       Map.put(schema, "map", map)
-      |> gen_init()
+      |> gen_lazy()
     end)
     |> StreamData.one_of()
   end
@@ -85,7 +85,7 @@ defmodule Jake do
     |> StreamData.bind(fn type ->
       map = Map.put(spec, "type", type)
       size = trunc(schema["size"] / 2)
-      Map.put(schema, "map", map) |> Map.put("size", size) |> gen_init()
+      Map.put(schema, "map", map) |> Map.put("size", size) |> gen_lazy()
     end)
   end
 end
