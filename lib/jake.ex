@@ -40,7 +40,7 @@ defmodule Jake do
     StreamData.constant(%{new_context | size: size})
   end
 
-  def gen(%Context{child: %{"enum" => enum} = spec} = context) when is_list(enum) do
+  def gen(%Context{child: %{"enum" => enum} = spec} = _context) when is_list(enum) do
     StreamData.member_of(enum)
     |> StreamData.filter(fn x -> ExJsonSchema.Validator.valid?(spec, x) end)
   end
@@ -66,7 +66,7 @@ defmodule Jake do
     %{context | child: child} |> gen_lazy()
   end
 
-  def gen(%Context{child: %{"type" => type} = spec} = context) when is_binary(type) do
+  def gen(%Context{child: %{"type" => type} = _spec} = context) when is_binary(type) do
     module = String.to_existing_atom("Elixir.Jake.#{String.capitalize(type)}")
     apply(module, :gen, [context])
   end

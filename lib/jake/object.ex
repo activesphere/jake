@@ -26,7 +26,7 @@ defmodule Jake.Object do
     |> StreamUtil.merge(StreamData.fixed_map(as_map(properties, required, context)))
   end
 
-  defp additional(properties, _all, min.._max, schema) when min < 0 or not is_map(properties) do
+  defp additional(properties, _all, min.._max, _context) when min < 0 or not is_map(properties) do
     StreamData.constant(%{})
   end
 
