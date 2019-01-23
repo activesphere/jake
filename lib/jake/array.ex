@@ -21,10 +21,8 @@ defmodule Jake.Array do
       items = Stream.concat([items, additional_items])
 
       StreamData.bind(StreamData.integer(min_items..max_items), fn count ->
-        list = Enum.take(items, count)
-
-        for(n <- list, do: %{context | child: n})
-        |> Enum.map(&Jake.gen_lazy(&1))
+        Enum.take(items, count)
+        |> Enum.map(&Jake.gen_lazy(%{context | child: &1}))
         |> StreamData.fixed_list()
       end)
       |> StreamData.filter(fn x ->
