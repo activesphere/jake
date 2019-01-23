@@ -22,7 +22,7 @@ defmodule Jake do
     StreamData.bind(
       get_lazy_streamkey(context),
       fn {child, size} ->
-        gen(child, %{context | child: child, size: size}) |> StreamData.resize(size)
+        gen(%{context | child: child, size: size}) |> StreamData.resize(size)
       end
     )
   end
@@ -38,12 +38,12 @@ defmodule Jake do
     end
   end
 
-  def gen(%{"enum" => enum} = spec, _context) when is_list(enum) do
+  def gen(%Context{child: %{"enum" => enum} = spec} = context) when is_list(enum) do
     StreamData.member_of(enum)
     |> StreamData.filter(fn x -> ExJsonSchema.Validator.valid?(spec, x) end)
   end
 
-  def gen(%{"anyOf" => options} = spec, context) when is_list(options) do
+  def gen(%Context{child: %{"anyOf" => options} = spec} = context) when is_list(options) do
     Enum.map(options, fn option ->
       child = Map.merge(Map.drop(spec, ["anyOf"]), option)
       %{context | child: child} |> gen_lazy()
@@ -51,7 +51,7 @@ defmodule Jake do
     |> StreamData.one_of()
   end
 
-  def gen(%{"allOf" => options} = spec, context) when is_list(options) do
+  def gen(%Context{child: %{"allOf" => options} = spec} = context) when is_list(options) do
     properties =
       options
       |> Enum.reduce(%{}, fn x, acc -> MapUtil.deep_merge(x, acc) end)
@@ -64,12 +64,12 @@ defmodule Jake do
     %{context | child: child} |> gen_lazy()
   end
 
-  def gen(%{"type" => type} = spec, context) when is_binary(type) do
+  def gen(%Context{child: %{"type" => type} = spec} = context) when is_binary(type) do
     module = String.to_existing_atom("Elixir.Jake.#{String.capitalize(type)}")
-    apply(module, :gen, [spec, context])
+    apply(module, :gen, [context])
   end
 
-  def gen(%{"type" => types} = spec, context) when is_list(types) do
+  def gen(%Context{child: %{"type" => types} = spec} = context) when is_list(types) do
     Enum.map(types, fn type ->
       child = %{spec | "type" => type}
 
@@ -80,7 +80,7 @@ defmodule Jake do
   end
 
   # type not present
-  def gen(spec, context) do
+  def gen(%Context{child: spec} = context) do
     StreamData.member_of(@types)
     |> StreamData.bind(fn type ->
       child = Map.put(spec, "type", type)

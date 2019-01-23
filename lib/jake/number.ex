@@ -1,7 +1,8 @@
 defmodule Jake.Number do
   alias Jake.StreamUtil
-
-  def gen(spec, _) do
+  alias Jake.Context
+  
+  def gen(%Context{child: spec} = context) do
     min = Map.get(spec, "minimum")
     max = Map.get(spec, "maximum")
     exclusive_min = Map.get(spec, "exclusiveMinimum", false)

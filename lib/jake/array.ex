@@ -1,5 +1,7 @@
 defmodule Jake.Array do
-  def gen(spec, context) do
+  alias Jake.Context
+  
+  def gen(%Context{child: spec} = context) do
     items = Map.get(spec, "items", %{})
     uniq = Map.get(spec, "uniqueItems", false)
     additional_items = Map.get(spec, "additionalItems", %{})
