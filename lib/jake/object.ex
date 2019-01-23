@@ -1,7 +1,7 @@
 defmodule Jake.Object do
   alias Jake.StreamUtil
   alias Jake.Context
-  
+
   def gen(%Context{child: spec} = context) do
     properties = Map.get(spec, "properties", %{})
     required = Map.get(spec, "required", [])
