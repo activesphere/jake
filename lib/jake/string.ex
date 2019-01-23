@@ -1,5 +1,7 @@
 defmodule Jake.String do
-  def gen(spec) do
+  alias Jake.Context
+
+  def gen(%Context{child: spec} = _context) do
     options = []
     min_length = Map.get(spec, "minLength")
     max_length = Map.get(spec, "maxLength")

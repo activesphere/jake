@@ -1,5 +1,7 @@
 defmodule Jake.Array do
-  def gen(spec) do
+  alias Jake.Context
+
+  def gen(%Context{child: spec} = context) do
     items = Map.get(spec, "items", %{})
     uniq = Map.get(spec, "uniqueItems", false)
     additional_items = Map.get(spec, "additionalItems", %{})
@@ -20,14 +22,16 @@ defmodule Jake.Array do
 
       StreamData.bind(StreamData.integer(min_items..max_items), fn count ->
         Enum.take(items, count)
-        |> Enum.map(&Jake.gen(&1))
+        |> Enum.map(&Jake.gen_lazy(%{context | child: &1}))
         |> StreamData.fixed_list()
       end)
       |> StreamData.filter(fn x ->
         !uniq || length(Enum.uniq(x)) == length(x)
       end)
     else
-      list_of.(Jake.gen(items), min_length: min_items, max_length: max_items)
+      %{context | child: items}
+      |> Jake.gen_lazy()
+      |> list_of.(min_length: min_items, max_length: max_items)
     end
   end
 end
