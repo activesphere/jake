@@ -59,9 +59,8 @@ defmodule Jake.Ref do
         [url, nil]
       end
 
-    IO.inspect({url, local})
     {:ok, {{_, 200, _}, _, schema}} = :httpc.request(:get, {to_charlist(url), []}, [], [])
-    jschema = Poison.decode!(schema)
+    jschema = Jason.decode!(schema)
 
     if is_nil(local) do
       jschema
