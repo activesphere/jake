@@ -21,21 +21,23 @@ defmodule Jake do
   def gen_lazy(context) do
     StreamData.bind(
       get_lazy_streamkey(context),
-      fn {child, size} ->
+      fn %Context{child: child, size: size} ->
         gen(%{context | child: child, size: size}) |> StreamData.resize(size)
       end
     )
   end
 
   def get_lazy_streamkey(context) do
-    {child, ref} =
-      get_in(context.child, ["$ref"]) |> Jake.Ref.expand_ref(context.child, context.root)
+    {new_context, ref} = Jake.Ref.expand_ref(context)
 
-    if ref do
-      StreamData.constant({child, trunc(context.size / 2)})
-    else
-      StreamData.constant({child, context.size})
-    end
+    size =
+      if ref do
+        trunc(new_context.size / 2)
+      else
+        new_context.size
+      end
+
+    StreamData.constant(%{new_context | size: size})
   end
 
   def gen(%Context{child: %{"enum" => enum} = spec} = context) when is_list(enum) do
