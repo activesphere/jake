@@ -22,7 +22,8 @@ defmodule Jake.MixProject do
       {:stream_data, "~> 0.4"},
       {:jason, "~> 1.1"},
       {:randex, "~> 0.4"},
-      {:ex_json_schema, "~> 0.5.4"}
+      {:ex_json_schema, "~> 0.5.4"},
+      {:odgn_json_pointer, "~> 2.4"}
     ]
   end
 end
