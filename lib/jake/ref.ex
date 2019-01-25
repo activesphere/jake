@@ -29,8 +29,9 @@ defmodule Jake.Ref do
 
   def process_http_path(url) do
     [url, local] =
-      if String.contains?(url, "#/") do
-        String.split(url, "#/")
+      if String.contains?(url, "#") do
+        u = URI.parse(url)
+        ["#{u.scheme}//#{u.authority}:#{u.port}#{u.path}", u.fragment]
       else
         [url, nil]
       end
