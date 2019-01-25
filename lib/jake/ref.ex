@@ -8,14 +8,24 @@ defmodule Jake.Ref do
   end
 
   def expand_ref(%Context{child: %{"$ref" => ref} = spec} = context) when is_binary(ref) do
-    uri = URI.decode(ref)
+    uri_parse = URI.decode(ref) |> URI.parse()
 
-    ref_map =
-      if String.starts_with?(uri, "http") do
-        process_http_path(uri)
-      else
-        {:ok, value} = JSONPointer.get(context.root, uri)
-        value
+    {context, ref_map} =
+      cond do
+        uri_parse.scheme in ["http", "https"] ->
+          process_http_path(uri_parse, context)
+
+        uri_parse.path == nil and is_binary(uri_parse.fragment) ->
+          {context, JSONPointer.get!(context.root, uri_parse.fragment)}
+
+        is_binary(uri_parse.path) and is_binary(uri_parse.fragment) ->
+          ref_map =
+            Path.join(context.default_path, uri_parse.path)
+            |> File.read!()
+            |> Jason.decode!()
+            |> JSONPointer.get!(uri_parse.fragment)
+
+          {context, ref_map}
       end
 
     new_child = Map.drop(spec, ["$ref"]) |> Map.merge(ref_map)
@@ -27,23 +37,24 @@ defmodule Jake.Ref do
     {context, false}
   end
 
-  def process_http_path(url) do
-    [url, local] =
-      if String.contains?(url, "#") do
-        u = URI.parse(url)
-        ["#{u.scheme}//#{u.authority}:#{u.port}#{u.path}", u.fragment]
+  def process_http_path(uri_parse, context) do
+    url = "#{uri_parse.scheme}://#{uri_parse.authority}:#{uri_parse.port}#{uri_parse.path}"
+
+    {context, schema} =
+      if context.cache[url] == nil do
+        {:ok, {{_, 200, _}, _, schema}} = :httpc.request(:get, {to_charlist(url), []}, [], [])
+        new_cache = Map.put(context.cache, url, schema)
+        {%{context | cache: new_cache}, schema}
       else
-        [url, nil]
+        {context, context.cache[url]}
       end
 
-    {:ok, {{_, 200, _}, _, schema}} = :httpc.request(:get, {to_charlist(url), []}, [], [])
     jschema = Jason.decode!(schema)
 
-    if is_nil(local) do
-      jschema
+    if uri_parse.fragment do
+      {context, JSONPointer.get!(jschema, uri_parse.fragment)}
     else
-      {:ok, value} = JSONPointer.get(jschema, local)
-      value
+      {context, jschema}
     end
   end
 end
