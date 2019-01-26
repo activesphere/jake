@@ -8,22 +8,23 @@ defmodule Jake.Ref do
   end
 
   def expand_ref(%Context{child: %{"$ref" => ref} = spec} = context) when is_binary(ref) do
-    uri_parse = URI.decode(ref) |> URI.parse()
+    parsed_uri = URI.decode(ref) |> URI.parse()
 
     {context, ref_map} =
       cond do
-        uri_parse.scheme in ["http", "https"] ->
-          process_http_path(uri_parse, context)
+        parsed_uri.scheme in ["http", "https"] ->
+          process_http_path(parsed_uri, context)
 
-        uri_parse.path == nil and is_binary(uri_parse.fragment) ->
-          {context, JSONPointer.get!(context.root, uri_parse.fragment)}
+        parsed_uri.path == nil and is_binary(parsed_uri.fragment) ->
+          {context, JSONPointer.get!(context.root, parsed_uri.fragment)}
 
-        is_binary(uri_parse.path) and is_binary(uri_parse.fragment) ->
+        is_binary(parsed_uri.path) and is_binary(parsed_uri.fragment) ->
           ref_map =
-            Path.join(context.default_path, uri_parse.path)
+            File.cwd!()
+            |> Path.join(parsed_uri.path)
             |> File.read!()
             |> Jason.decode!()
-            |> JSONPointer.get!(uri_parse.fragment)
+            |> JSONPointer.get!(parsed_uri.fragment)
 
           {context, ref_map}
       end
@@ -37,8 +38,8 @@ defmodule Jake.Ref do
     {context, false}
   end
 
-  def process_http_path(uri_parse, context) do
-    url = "#{uri_parse.scheme}://#{uri_parse.authority}:#{uri_parse.port}#{uri_parse.path}"
+  def process_http_path(parsed_uri, context) do
+    url = "#{parsed_uri.scheme}://#{parsed_uri.authority}:#{parsed_uri.port}#{parsed_uri.path}"
 
     {context, schema} =
       if context.cache[url] == nil do
@@ -51,8 +52,8 @@ defmodule Jake.Ref do
 
     jschema = Jason.decode!(schema)
 
-    if uri_parse.fragment do
-      {context, JSONPointer.get!(jschema, uri_parse.fragment)}
+    if parsed_uri.fragment do
+      {context, JSONPointer.get!(jschema, parsed_uri.fragment)}
     else
       {context, jschema}
     end
