@@ -33,6 +33,7 @@ defmodule Jake.Object do
       else
         properties
       end
+
     spec = Map.put(spec, "properties", properties)
     context = %{context | child: spec}
     required = Map.get(spec, "required", [])
@@ -68,7 +69,10 @@ defmodule Jake.Object do
             Map.put(properties, k, Map.merge(v, value))
           end
         end)
-      end) |> List.flatten() |> Enum.uniq() |> List.delete(nil)
+      end)
+      |> List.flatten()
+      |> Enum.uniq()
+      |> List.delete(nil)
     else
       properties
     end
