@@ -2,8 +2,41 @@ defmodule Jake.Object do
   alias Jake.StreamUtil
   alias Jake.Context
 
+  defp gen_pattern_properties(
+         %Context{child: %{"patternProperties" => patternProperties} = _spec} = context
+       ) do
+    nlist =
+      for {k, v} <- patternProperties,
+          do: build_and_verify_patterns(k, v, patternProperties, context)
+
+    merge_patterns(nlist)
+  end
+
   def gen(%Context{child: spec} = context) do
     properties = Map.get(spec, "properties", %{})
+
+    if map_size(properties) == 0 and spec["patternProperties"] do
+      gen_pattern_properties(context)
+    else
+      new_child = Map.put(spec, "properties", properties)
+      gen_regular_object(%{context | child: new_child})
+    end
+  end
+
+  defp gen_regular_object(%Context{child: %{"properties" => properties} = spec} = context) do
+    nproperties = check_pattern_properties(spec, properties, spec["patternProperties"])
+
+    pattern_prop =
+      if nproperties != nil and is_list(nproperties) do
+        nlist = for n <- nproperties, length(n) > 0, do: Enum.fetch!(n, 0)
+        Enum.reduce(nlist, %{}, fn x, acc -> Map.merge(x, acc) end)
+      else
+        properties
+      end
+
+    properties = pattern_prop
+    spec = Map.put(spec, "properties", properties)
+    context = %{context | child: spec}
     required = Map.get(spec, "required", [])
     all_properties = Map.keys(properties)
     optional = Enum.filter(all_properties, &(!Enum.member?(required, &1)))
@@ -24,6 +57,44 @@ defmodule Jake.Object do
       )
     )
     |> StreamUtil.merge(StreamData.fixed_map(as_map(properties, required, context)))
+  end
+
+  defp check_pattern_properties(_spec, properties, pprop) do
+    if pprop do
+      for {k, v} <- properties do
+        for {key, value} <- pprop,
+            Regex.match?(~r/#{key}/, k),
+            do: Map.put(properties, k, Map.merge(v, value))
+      end
+    else
+      properties
+    end
+  end
+
+  defp merge_patterns(nlist) do
+    merge_maps = fn list -> Enum.reduce(list, %{}, fn x, acc -> Map.merge(acc, x) end) end
+
+    StreamData.bind(StreamData.fixed_list(nlist), fn list ->
+      StreamData.constant(merge_maps.(list))
+    end)
+  end
+
+  defp build_and_verify_patterns(key, value, pprop, context) do
+    pprop_schema = %{"patternProperties" => pprop}
+    # IO.inspect(pprop_schema)
+    nkey = Randex.stream(~r/#{key}/, mod: Randex.Generator.StreamData)
+    nval = %{context | child: value} |> Jake.gen_lazy()
+
+    StreamData.bind(nkey, fn k ->
+      StreamData.bind_filter(
+        nval,
+        fn v ->
+          result = ExJsonSchema.Validator.valid?(pprop_schema, %{k => v})
+          if result, do: {:cont, StreamData.constant(%{k => v})}, else: :skip
+        end,
+        100
+      )
+    end)
   end
 
   defp additional(properties, _all, min.._max, _context) when min < 0 or not is_map(properties) do
