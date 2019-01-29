@@ -1,16 +1,7 @@
 defmodule Jake.Object do
   alias Jake.StreamUtil
   alias Jake.Context
-
-  defp gen_pattern_properties(
-         %Context{child: %{"patternProperties" => patternProperties} = _spec} = context
-       ) do
-    nlist =
-      for {k, v} <- patternProperties,
-          do: build_and_verify_patterns(k, v, patternProperties, context)
-
-    merge_patterns(nlist)
-  end
+  alias Jake.MapUtil
 
   def gen(%Context{child: spec} = context) do
     properties = Map.get(spec, "properties", %{})
@@ -23,18 +14,25 @@ defmodule Jake.Object do
     end
   end
 
+  defp gen_pattern_properties(
+         %Context{child: %{"patternProperties" => patternProperties} = _spec} = context
+       ) do
+    nlist =
+      for {k, v} <- patternProperties,
+          do: build_and_verify_patterns(k, v, patternProperties, context)
+
+    merge_patterns(nlist)
+  end
+
   defp gen_regular_object(%Context{child: %{"properties" => properties} = spec} = context) do
     nproperties = check_pattern_properties(spec, properties, spec["patternProperties"])
 
-    pattern_prop =
-      if nproperties != nil and is_list(nproperties) do
-        nlist = for n <- nproperties, length(n) > 0, do: Enum.fetch!(n, 0)
-        Enum.reduce(nlist, %{}, fn x, acc -> Map.merge(x, acc) end)
+    properties =
+      if is_list(nproperties) and length(nproperties) > 0 do
+        Enum.reduce(nproperties, %{}, fn x, acc -> MapUtil.deep_merge(x, acc) end)
       else
         properties
       end
-
-    properties = pattern_prop
     spec = Map.put(spec, "properties", properties)
     context = %{context | child: spec}
     required = Map.get(spec, "required", [])
@@ -61,11 +59,16 @@ defmodule Jake.Object do
 
   defp check_pattern_properties(_spec, properties, pprop) do
     if pprop do
-      for {k, v} <- properties do
-        for {key, value} <- pprop,
-            Regex.match?(~r/#{key}/, k),
-            do: Map.put(properties, k, Map.merge(v, value))
-      end
+      pprop_list = Map.to_list(pprop)
+
+      Map.to_list(properties)
+      |> Enum.map(fn {k, v} ->
+        Enum.map(pprop_list, fn {key, value} ->
+          if Regex.match?(~r/#{key}/, k) do
+            Map.put(properties, k, Map.merge(v, value))
+          end
+        end)
+      end) |> List.flatten() |> Enum.uniq() |> List.delete(nil)
     else
       properties
     end
