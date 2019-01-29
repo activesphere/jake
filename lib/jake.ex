@@ -22,7 +22,14 @@ defmodule Jake do
     StreamData.bind(
       get_lazy_streamkey(context),
       fn %Context{child: child, size: size} ->
-        gen(%{context | child: child, size: size}) |> StreamData.resize(size)
+        new_context = %{context | child: child, size: size}
+
+        if child["$ref"] do
+          gen_lazy(new_context)
+        else
+          gen(new_context)
+        end
+        |> StreamData.resize(size)
       end
     )
   end
