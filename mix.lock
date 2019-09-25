@@ -1,6 +1,7 @@
 %{
   "ex_json_schema": {:hex, :ex_json_schema, "0.5.7", "14a1bcd716e432badb19e5f54fd0f3f0be47b34d1b5957944702be90d66a6cf6", [:mix], [], "hexpm"},
   "jason": {:hex, :jason, "1.1.1", "d3ccb840dfb06f2f90a6d335b536dd074db748b3e7f5b11ab61d239506585eb2", [:mix], [{:decimal, "~> 1.0", [hex: :decimal, repo: "hexpm", optional: true]}], "hexpm"},
+  "odgn_json_pointer": {:hex, :odgn_json_pointer, "2.5.0", "d90b8e854cb2b59cc1ec6f0fd8a38026debadfdd2bc418364a0f51707ba6b0af", [:mix], [], "hexpm"},
   "randex": {:hex, :randex, "0.4.0", "f76712da3663dd7d4166e017829ec428dc67df9e11b82d923dfd6f9b4854b373", [:mix], [{:stream_data, "~> 0.4", [hex: :stream_data, repo: "hexpm", optional: true]}], "hexpm"},
   "stream_data": {:hex, :stream_data, "0.4.2", "fa86b78c88ec4eaa482c0891350fcc23f19a79059a687760ddcf8680aac2799b", [:mix], [], "hexpm"},
 }

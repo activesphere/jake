@@ -25,7 +25,8 @@ defmodule Jake.String do
     if pattern do
       Randex.stream(pattern, mod: Randex.Generator.StreamData)
       |> StreamData.filter(fn x ->
-        (!max_length || length(x) <= max_length) && (!min_length || length(x) >= min_length)
+        (!max_length || String.length(x) <= max_length) &&
+          (!min_length || String.length(x) >= min_length)
       end)
     else
       StreamData.string(:ascii, options)
