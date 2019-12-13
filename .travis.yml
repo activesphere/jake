@@ -1,11 +1,14 @@
+language: elixir
 matrix:
   include:
-    - language: elixir
-      otp_release: 20.3
+    - otp_release: 20.3
       elixir: 1.6
-    - language: elixir
-      otp_release: 21.0
+    - otp_release: 21.0
       elixir: 1.7
+    - otp_release: 21.0
+      elixir: 1.8
+    - otp_release: 22.0
+      elixir: 1.9
 
 script:
   - mix format --check-formatted
