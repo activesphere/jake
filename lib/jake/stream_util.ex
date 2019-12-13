@@ -23,7 +23,7 @@ defmodule Jake.StreamUtil do
     case type do
       :integer ->
         StreamData.integer(
-          ceil(min || -9_007_199_254_740_991)..trunc(max || 9_007_199_254_740_991)
+          float_ceil(min || -9_007_199_254_740_991)..trunc(max || 9_007_199_254_740_991)
         )
 
       :float ->
@@ -36,7 +36,7 @@ defmodule Jake.StreamUtil do
     end)
   end
 
-  defp ceil(x) do
+  defp float_ceil(x) do
     trunc(Float.ceil(x * 1.0))
   end
 end
