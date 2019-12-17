@@ -85,7 +85,8 @@ defmodule JakeTest do
           "draft4/additionalItems.json",
           "draft4/maxProperties.json",
           "draft4/minProperties.json",
-          "draft4/additionalProperties.json"
+          "draft4/additionalProperties.json",
+          "draft4/patternProperties.json"
         ] do
       Path.wildcard("test_suite/tests/#{path}")
       |> Enum.map(fn path -> File.read!(path) |> Jason.decode!() end)

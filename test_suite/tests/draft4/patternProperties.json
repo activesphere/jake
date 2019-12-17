@@ -116,5 +116,16 @@
                 "valid": false
             }
         ]
+    },
+    {
+        "description": "patternProperties with properties",
+        "schema": {
+            "type": "object",
+            "properties": {"foo": {"maximum": 100}, "bar": {"type":"integer"}},
+            "patternProperties": {
+                "f.*o": {"type": "integer"},
+                "ba*r": {"minimum": 20}
+            }
+        }
     }
 ]
